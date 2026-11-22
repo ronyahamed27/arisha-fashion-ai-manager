@@ -1,0 +1,1 @@
+# arisha-fashion-ai-manager
