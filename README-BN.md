@@ -1,42 +1,55 @@
-# Aarisha Fashion Messenger AI — Backend Starter
+# Aarisha Fashion AI Business Management System — V2
 
-এই প্রজেক্টটি Meta Messenger Webhook-এর প্রাথমিক Node.js সার্ভার। এটি:
-- Meta-এর GET webhook verification request যাচাই করে
-- POST webhook-এর `X-Hub-Signature-256` যাচাই করে
-- `messages` ইভেন্টে কাস্টমারের লেখা গ্রহণ করে
-- OpenAI API দিয়ে বাংলা উত্তর তৈরি করে
-- Meta Graph API দিয়ে Page-এর Messenger-এ উত্তর পাঠায়
+বাংলা Admin Dashboard + Node.js/Express + PostgreSQL + OpenAI Responses API + Meta Messenger Webhook + Steadfast Courier API।
 
-## গুরুত্বপূর্ণ সীমাবদ্ধতা
-এটি প্রথম ধাপের starter backend; এখনো পণ্যের ক্যাটালগ, অর্ডার ডেটাবেস, অ্যাডমিন ড্যাশবোর্ড, পেমেন্ট বা স্টক ম্যানেজমেন্ট নেই। AI-কে কোনো দাম/স্টক বানিয়ে বলতে নিষেধ করা হয়েছে। এগুলো পরের ধাপে যুক্ত করতে হবে।
+## V2-তে অন্তর্ভুক্ত
+- Admin login (JWT, 12 ঘণ্টা)
+- Product CRUD, SKU, মূল্য, স্টক; অর্ডার তৈরি হলে স্টক কমে
+- Order list ও status update
+- Messenger webhook verification এবং OpenAI-ভিত্তিক বাংলা reply
+- AI-কে পণ্যের বর্তমান মূল্য/স্টক দেওয়া
+- Daily report endpoint এবং Asia/Dhaka timezone-এ দৈনিক সারাংশ লগ
+- Steadfast booking API integration
+- **Courier booking hard gate:** UI-তে confirmation dialog এবং API-তে `APPROVE_STEADFAST_BOOKING` confirmation string ছাড়া বুকিং endpoint কাজ করবে না। AI prompt-এও booking নিষিদ্ধ।
 
-## Render-এ Deploy করার জন্য
-1. এই ZIP extract করুন।
-2. ফাইলগুলো একটি private GitHub repository-তে upload করুন।
-3. Render Dashboard → New → Web Service → ওই repository Connect করুন।
-4. Runtime: Node; Build Command: `npm install`; Start Command: `npm start`.
-5. Deploy হওয়ার পর Render URL হবে `https://YOUR-SERVICE.onrender.com`।
-6. Render → Service → Environment-এ `.env.example`-এর ভ্যারিয়েবলগুলো আলাদা Environment Variable হিসেবে দিন।
-7. `VERIFY_TOKEN`-এ নিজের তৈরি করা দীর্ঘ random secret দিন। একই secret Meta webhook form-এ দিতে হবে।
-8. `META_APP_SECRET`, `PAGE_ACCESS_TOKEN`, `OPENAI_API_KEY` কেবল Render Environment-এ দিন; কখনো Messenger/chat বা public GitHub-এ দেবেন না।
+## চালু করার আগে আবশ্যক
+এই ZIP হলো deploy-ready source code, কিন্তু আপনার নিজস্ব credentials ছাড়া Meta, OpenAI, PostgreSQL বা Steadfast-এ live সংযোগ করা সম্ভব নয়। নিচের environment variables Render-এ সেট করুন:
+- `DATABASE_URL`
+- `JWT_SECRET` (দীর্ঘ random secret)
+- `ADMIN_USERNAME`, `ADMIN_PASSWORD`
+- `OPENAI_API_KEY`
+- `META_VERIFY_TOKEN`, `META_APP_SECRET`, `META_PAGE_ACCESS_TOKEN`
+- `STEADFAST_API_KEY`, `STEADFAST_SECRET_KEY`
+- ঐচ্ছিক `OPENAI_MODEL`, `META_GRAPH_VERSION`, `TIMEZONE`
 
-## Meta-তে Webhook
-Callback URL: `https://YOUR-SERVICE.onrender.com/webhook`
-Verify Token: Render-এ দেওয়া একই `VERIFY_TOKEN`
-Webhook fields: `messages`; চাইলে `messaging_postbacks` এবং `message_reads`।
+`ADMIN_PASSWORD` plain text রাখা যায় (প্রথম setup-এ), অথবা bcrypt hash দিতে পারেন। Production-এ শক্তিশালী password ব্যবহার করুন।
 
-Webhook verification সফল হওয়ার পর Page-টিকে app-এর webhook-এ subscribe করতে হবে। Page access token-এর জন্য `pages_messaging` এবং Page-এ যথাযথ messaging task/permission দরকার। App Review/public access আলাদা ধাপ।
+## Local run
+1. Node.js 20+ এবং PostgreSQL ইনস্টল করুন।
+2. `npm install`
+3. `.env.example` কপি করে `.env` বানিয়ে values পূরণ করুন।
+4. `npm start`
+5. `http://localhost:3000` খুলুন।
 
-## নিরাপত্তা
-- `.env` ফাইল GitHub-এ upload করবেন না।
-- Page Access Token, App Secret, OpenAI API Key কাউকে পাঠাবেন না।
-- কোনো credential প্রকাশ হয়ে গেলে সংশ্লিষ্ট Dashboard থেকে rotate/regenerate করুন।
-- Meta App-এর Standard Access অবস্থায় সাধারণত App-এর Admin/Developer/Tester অ্যাকাউন্ট দিয়েই পরীক্ষা করা যায়; public customer-দের জন্য App Review/প্রয়োজনীয় access লাগতে পারে।
+## Render deploy
+1. ZIP extract করে GitHub repository-তে ফাইলগুলো upload/push করুন।
+2. Render-এ New → Web Service → repository নির্বাচন।
+3. Build Command: `npm install`
+4. Start Command: `npm start`
+5. Render PostgreSQL তৈরি করে Internal Database URL-টি `DATABASE_URL` হিসেবে দিন।
+6. Environment variables পূরণ করে deploy করুন।
+7. Meta Developer Console-এ Callback URL হবে `https://YOUR-SERVICE.onrender.com/webhook`; Verify Token হবে `META_VERIFY_TOKEN`; `messages` webhook subscription চালু করুন।
 
-## Local run (ঐচ্ছিক)
-```bash
-npm install
-cp .env.example .env
-# .env-এ নিজের secret বসান
-npm start
-```
+## Steadfast
+API endpoint `POST /api/v1/create_order`; header `Api-Key` ও `Secret-Key`। লাইভে চালানোর আগে আপনার Steadfast merchant account-এর বর্তমান API docs-এ payload/response fields মিলিয়ে নিন। সফল booking response থেকে consignment id সংরক্ষণ হয়। বুকিং API credentials না থাকলে booking বন্ধ থাকবে।
+
+## গুরুত্বপূর্ণ সীমাবদ্ধতা ও নিরাপত্তা
+- Meta Page token, OpenAI key, Steadfast keys কখনো browser বা GitHub-এ রাখবেন না; শুধু Render Environment Variables।
+- Messenger AI কথোপকথন থেকে সরাসরি অর্ডার তৈরি করে না; Dashboard থেকে অর্ডার তৈরি করতে হয়। Customer checkout/order extraction-এর জন্য পরবর্তী integration প্রয়োজন।
+- Daily report বর্তমানে API ও server log-এ তৈরি হয়; email/Messenger delivery বা PDF export নেই।
+- Courier status sync/webhook, return/refund workflow, multiple product lines per UI order, image upload/storage, advanced roles/permissions ও audit log এখনো অন্তর্ভুক্ত নয়।
+- Admin JWT secret বদলালে পুরনো token বাতিল হবে।
+- Meta signature validation raw-body ভিত্তিক production-hardening-এর জন্য reverse proxy/body parser configuration যাচাই করুন; deploy-এর আগে test করুন।
+
+## Health check
+`GET /health` → service/version status.

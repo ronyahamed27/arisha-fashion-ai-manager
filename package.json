@@ -1,16 +1,17 @@
 {
-  "name": "aarisha-fashion-messenger-backend",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Starter webhook backend for Aarisha Fashion Messenger AI",
-  "type": "module",
-  "engines": { "node": ">=20" },
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
-  },
+  "name": "aarisha-fashion-ai",
+  "version": "2.0.0",
+  "description": "Aarisha Fashion AI Business Management System",
+  "main": "server.js",
+  "scripts": {"start": "node server.js", "dev": "node --watch server.js"},
+  "engines": {"node": ">=20"},
   "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.1"
   }
 }
